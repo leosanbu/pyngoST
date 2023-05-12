@@ -1,7 +1,0 @@
-urllib3==1.26.6
-requests
-biopython
-pandas
-pyfaidx
-openpyxl
-pyahocorasick
