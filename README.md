@@ -16,7 +16,7 @@ First, a database is built that contains updated fasta files with all the known 
 I recommend to create a python3 virtual environment and install using `pip`. Since `pyngoST` is not publicly available in `Pypi` yet, you can use the `.tar.gz` packaged distribution in the `pyngoST/dist` directory.
 ```
 ## Create and activate a virtual environment (i.e. `venv` or any other name):
-virtualenv venv
+python3 -m venv venv
 source venv/bin/activate
 
 ## Install pyngoST using pip install on the latest distribution
@@ -26,11 +26,11 @@ pyngoST will be available to run from the directory containing the python librar
 
 `python3 ~/venv/lib/python3.8/site-packages/pyngoST/pyngoST.py`
 
-You can make it more easily accessible by adding it to your PATH at the end of one of the following:
-* For Linux/macOS with Bash: the `~/.bashrc` or `~/.bash_profile` file.
+You can make it more easily accessible by adding it to your PATH or creating an alias at the end of one of the following:
+* For Linux/macOS with Bash: the `~/.bashrc` file.
 * For macOS with Zsh: the `~/.zshrc` file.
 
-`export PATH=$PATH:/Users/username/venv/lib/python3.8/site-packages/pyngoST`
+`alias pyngoST.py="/home/user/venv/bin/python3 /home/user/venv/lib/python3.8/site-packages/pyngoST/pyngoST.py"`
 
 Activate the virtual environment whenever you want to use `pyngoST`. Exit the virtual environment by running `deactivate`:
 ```
