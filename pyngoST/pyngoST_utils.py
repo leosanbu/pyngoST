@@ -646,7 +646,7 @@ def process_files(args):
 			st = profilesDB['MLST'].get(prof, '-')
 			st_list['MLST'] = st+'\t'+prof
 		elif s=='NG-STAR':
-			if '|' not in resultsDB['penA'][0]:
+			if '|' not in resultsDB['penA'][0] and resultsDB['penA'][0] != '-':
 				checkpena = resultsDB['penA'][0].split('.')
 				checkpena2 = checkpena[1].split('-')
 				if len(checkpena2[0])==2:

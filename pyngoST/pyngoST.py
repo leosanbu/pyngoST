@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
 	with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
 		results = executor.map(process_files, args_list)
-
+		
 	## Access results
 	finalresults, ngmastClusters = access_results(results, genogroups)
 
