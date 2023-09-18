@@ -1,6 +1,9 @@
-db/allelesDB
+db/allelesDB_old
 db/230504_NGSTAR_CC.xlsx
+db/221219_NGSTAR_CCs.csv
 db/allelesDB_160523
+db/allelesDB_090623
+db/allelesDB_110823
 */.DS_Store
 .DS_Store
 pyngoST/__init__.py

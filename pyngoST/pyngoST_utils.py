@@ -70,7 +70,7 @@ def download_db(db_path, db_name, ccsfile):
 		sys.exit()
 	download_updated_dbs(db_path, ccsfile)
 	allelesDB = read_alleles(db_path)
-	update_pkl(db_path, allelesDB)
+	make_ACautomaton(db_path, allelesDB)
 	sys.exit()
 
 def update_db(db_path, ccsfile):
@@ -83,7 +83,7 @@ def update_db(db_path, ccsfile):
 		print('## Integrating NG-STAR CCs from', ccsfile)
 		integrate_ngstar_ccs(db_path, 'NGSTAR_profiles.tab', ccsfile)
 	allelesDB = read_alleles(db_path)
-	update_pkl(db_path, allelesDB)
+	make_ACautomaton(db_path, allelesDB)
 	sys.exit()
 
 def load_db(db_path):
@@ -133,9 +133,9 @@ def download_updated_dbs(db_path, ccsfile):
 	ngstarURLloci = 'https://ngstar.canada.ca/alleles/download?lang=en&loci_name='
 	ngstarNGSTARs = 'https://ngstar.canada.ca/sequence_types/download?lang=en'
 	for g in locistar:
-		r = requests.get(ngstarURLloci+g, allow_redirects=True)
+		r = requests.get(ngstarURLloci+g, allow_redirects=True, verify=False)
 		open(db_path+'/'+g+'.fas', 'wb').write(r.content)
-	s = requests.get(ngstarNGSTARs, allow_redirects=True)
+	s = requests.get(ngstarNGSTARs, allow_redirects=True, verify=False)
 	open(db_path+'/NGSTAR_profiles.xlsx', 'wb').write(s.content)
 	df = pd.read_excel(db_path+'/NGSTAR_profiles.xlsx', sheet_name='Sheet 1')
 	with open(db_path+'/NGSTAR_profiles.tmp.tab', 'w') as outfile:
@@ -422,7 +422,7 @@ def print_newallele_seqs(gene, coords, contigloc, fasta, allout, path):
 			out.write(locus.seq+'\n')
 	return locus
 	
-def update_pkl(path, allelesDB):
+def make_ACautomaton(path, allelesDB):
 	allelesAC = ahocorasick.Automaton()
 	for idx,key in enumerate(allelesDB):
 		allelesAC.add_word(key, (idx, key))
@@ -510,7 +510,7 @@ def calculate_genogroups(out_path, PORout_results, TBPBout_results, ngmastCluste
 	# calculate clusters
 	clusters=[]
 	for st in ngmastClusters:
-		if st != '-' or st != 'multiple':
+		if st != '-' and st != 'multiple':
 			s=ngmastClusters[st][0]+[st]
 			hit_clusters=set([])
 			for x, cluster in enumerate(clusters):
