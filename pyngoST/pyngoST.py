@@ -6,6 +6,7 @@ import time
 import pickle
 import subprocess
 import argparse as arg
+from argparse import RawTextHelpFormatter
 import concurrent.futures
 from pyngoST_utils import * 
 
@@ -13,7 +14,15 @@ from pyngoST_utils import *
 start_time = time.time()
 
 ## Script parameters
-parser = arg.ArgumentParser(description='pyngoST: multiple sequence typing of Neisseria gonorrhoeae large assembly collections', usage = '%(prog)s [options]')
+parser = arg.ArgumentParser(prog="pyngoST",
+	formatter_class=RawTextHelpFormatter,
+	description='pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria gonorrhoeae genome collections\n'
+	'\nCitation:\n'
+	'    Sanchez-Buso L, Sanchez-Serrano A, Golparian D and Unemo M.\n'
+	'    pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria gonorrhoeae genome collections.\n'
+	'    GitHub: https://github.com/leosanbu/pyngoST\n',
+	usage = '%(prog)s [options]')
+
 parser.add_argument('-i', '--input', help='Input files (fasta or tab/csv)', required=False, nargs='+')
 parser.add_argument('-r', '--read_file', help='File containing the paths to the input files', required=False)
 parser.add_argument('-s', '--schemes', help='Typing schemes to query separated by commas (options: NG-STAR, MLST, NG-MAST) (default=NG-STAR)', required=False, default='NG-STAR')
