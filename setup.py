@@ -5,7 +5,7 @@ setup(
     version='1.0.0',
     author='Leonor Sanchez-Buso',
     author_email='leonor.sanchez@fisabio.es',
-    description='pyngoST: multiple sequence typing of Neisseria gonorrhoeae large assembly collections',
+    description='pyngoST: fast, simultaneous and accurate and multiple sequence typing of Neisseria gonorrhoeae genome collections',
     url='https://github.com/leosanbu/pyngoST',
     packages=['pyngoST'],
     install_requires=[
