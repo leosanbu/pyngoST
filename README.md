@@ -4,7 +4,7 @@
 * **NG-STAR**: _N. gonorrhoeae_ Sequence Typing for Antimicrobial Resistance, hosted at Public Health Agency of Canada, National Microbiology Laboratory [NG-STAR Canada](https://ngstar.canada.ca/). This is a typing scheme published by [Demczuk et al. 2017](https://doi.org/10.1128/JCM.00100-17) that targets 7 genes associated to cephalosporin, macrolides and fluoroquinolones resistance: _**penA**, **mtrR**, **porB**, **ponA**, **gyrA**, **parC**_ and _**23S rRNA**_.
 * **NG-STAR CCs** (Clonal Complexes), published by [Golparian et al, 2021](https://doi.org/10.1093/jac/dkaa552). This scheme groups NG-STAR sequence types (STs) into Clonal Complexes (CCs) for a better fit of the typing scheme with the population structure of antimicrobial resistant (AMR) lineages.
 * **MLST** (Multi-Locus Sequence Typing), hosted at [PubMLST Neisseria](https://pubmlst.org/bigsdb?db=pubmlst_mlst_seqdef). This scheme was published by [Maiden et al, 1998](https://www.pnas.org/doi/full/10.1073/pnas.95.6.3140) and targets 7 housekeeping genes of the _Neisseria_ genus: _**abcZ**, **adk**, **aroE**, **fumC**, **gdh**, **pdhC**_ and _**pgm**_.
-* **NG-MAST** (_N. gonorrhoeae_ Multi-Antigen Sequence Typing), hosted at [PubMLST Neisseria](https://pubmlst.org/bigsdb?db=pubmlst_mlst_seqdef). This scheme was published by [Martin et al. 2004](https://doi.org/10.1086/383047) and targets 2 genes encoding rapidly-evolving surface antigens: _**porB**_ and _**tbpbB**_.
+* **NG-MAST v2** (_N. gonorrhoeae_ Multi-Antigen Sequence Typing), hosted at [PubMLST Neisseria](https://pubmlst.org/bigsdb?db=pubmlst_mlst_seqdef). This scheme was published by [Martin et al. 2004](https://doi.org/10.1086/383047) and targets 2 genes encoding rapidly-evolving surface antigens: _**porB**_ and _**tbpbB**_.
 * **NG-MAST Genogroups**, as described by [Harris et al, 2018](https://doi.org/10.1016/S1473-3099(18)30225-1). As NG-MAST loci are highly-variable, they poorly match the population structure of _N. gonorrhoeae_. Genogroups were described to group NG-MAST types, however they are calculated on the specific dataset under study and thus, are not comparable among studies.
 
 `pyngoST` is written in python3 and uses the [_pyahocorasick_](https://github.com/WojciechMula/pyahocorasick) library for fast simultaneous multi-loci search in _N. gonorrhoeae_ genomes. 
@@ -13,25 +13,16 @@ First, a database is built that contains updated fasta files with all the known 
 
 ## Installation
 
-I recommend to create a python3 virtual environment and install using `pip`. Since `pyngoST` is not publicly available in `Pypi` yet, you can use the `.tar.gz` packaged distribution in the `pyngoST/dist` directory.
+I recommend to create a python3 virtual environment and install pyngoST using `pip`.
+
 ```
 ## Create and activate a virtual environment (i.e. `venv` or any other name):
 python3 -m venv venv
 source venv/bin/activate
 
 ## Install pyngoST using pip install on the latest distribution
-pip install pyngoST-1.0.0.tar.gz
+pip install pyngoST
 ```
-pyngoST will be available to run from the directory containing the python libraries installed in `venv`:
-
-`python3 ~/venv/lib/python3.8/site-packages/pyngoST/pyngoST.py`
-
-You can make it more easily accessible by adding it to your PATH or creating an alias at the end of one of the following:
-* For Linux/macOS with Bash: the `~/.bashrc` file.
-* For macOS with Zsh: the `~/.zshrc` file.
-
-`alias pyngoST.py="/home/user/venv/bin/python3 /home/user/venv/lib/python3.8/site-packages/pyngoST/pyngoST.py"`
-
 Activate the virtual environment whenever you want to use `pyngoST`. Exit the virtual environment by running `deactivate`:
 ```
 ## Activate virtualenv
@@ -74,7 +65,12 @@ pyngoST.py -u -p /path/to/allelesDB -cc NGSTAR_CCs.csv
 ```
 usage: pyngoST.py [options]
 
-pyngoST: multiple sequence typing of Neisseria gonorrhoeae large assembly collections
+pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria gonorrhoeae genome collections
+
+Citation:
+    Sanchez-Buso L, Sanchez-Serrano A, Golparian D and Unemo M.
+    pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria gonorrhoeae genome collections.
+    GitHub: https://github.com/leosanbu/pyngoST
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -98,7 +94,7 @@ optional arguments:
   -z, --only_assignsts  Only assign STs from a table with NG-STAR, MLST and/or NG-MAST profiles (optional, default: None)
   -t NUM_THREADS, --num_threads NUM_THREADS
                         Number of processes to use for computation (optional, default: 1)
-  -p PATH, --path PATH  Path to database containing MLST/NG-STAR alleles and profiles. If not available, use -u to create an updated database
+  -p PATH, --path PATH  Path to database containing MLST/NG-STAR alleles and profiles. If not available, use -d to create an updated database
   -d, --download_db     Download updated allele and profile files and create database
   -n DB_NAME, --db_name DB_NAME
                         Name of the folder that will contain the database in case a download is requested with -d (default=allelesDB in working directory)
@@ -240,8 +236,7 @@ Multithreading is applied to the `process_files()` function, which, for each inp
 
 Please note that only computationally intensive tasks are worth multithreading, such as combining the blasting of new alleles with the calculation of NG-MAST genogroups. You can multithread using `-t <number of threads`, i.e:
 ```
-## Run pyngoST on 400 FASTA files requesting the blasting of new alleles with -b and genogroups calculation with -g
+## Run pyngoST on 400 FASTA files requesting the blasting of new alleles with -b and genogroups calculation with -g on 8 threads
 pyngoST.py -i /path/to/400genomes/*.fasta -p /path/to/allelesDB -s MLST,NG-MAST,NG-STAR -c -g -b -t 8
 ```
 The request of NG-STAR CCs with `-c` is not a calculation but only a query of the existing database and it does not add significantly more computation time compared to not requesting CCs.
-
