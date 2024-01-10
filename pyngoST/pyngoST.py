@@ -20,6 +20,7 @@ parser = arg.ArgumentParser(prog="pyngoST",
 	'\nCitation:\n'
 	'    Sanchez-Buso L, Sanchez-Serrano A, Golparian D and Unemo M.\n'
 	'    pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria gonorrhoeae genome collections.\n'
+	'    Preprint: https://www.biorxiv.org/content/10.1101/2023.10.23.563537v2\n'
 	'    GitHub: https://github.com/leosanbu/pyngoST\n',
 	usage = '%(prog)s [options]')
 
@@ -28,19 +29,23 @@ parser.add_argument('-r', '--read_file', help='File containing the paths to the 
 parser.add_argument('-s', '--schemes', help='Typing schemes to query separated by commas (options: NG-STAR, MLST, NG-MAST) (default=NG-STAR)', required=False, default='NG-STAR')
 parser.add_argument('-g', '--genogroups', help='Calculate NG-MAST genogroups from NG-MAST types (default=False)', required=False, action='store_true')
 parser.add_argument('-c', '--ngstarccs', help='Include NG-STAR CCs in output table (default=False)', required=False, action='store_true')
-parser.add_argument('-b', '--blast_new_alleles', help='Use blastn to find the closest alleles to new ones (default: False)', required=False, action='store_true')
-parser.add_argument('-a', '--alleles_out', help='Print fasta files with new alleles (optional, default: False)', required=False, action='store_true')
+parser.add_argument('-m', '--mosaic_pena', help='Report if the penA allele sequence is a mosaic or semimosaic (default=False)', required=False, action='store_true')
+parser.add_argument('-b', '--blast_new_alleles', help='Use blastn to find the closest alleles to new ones (default=False)', required=False, action='store_true')
+parser.add_argument('-a', '--alleles_out', help='Print fasta files with new alleles (optional, default=False)', required=False, action='store_true')
 parser.add_argument('-q', '--out_path', help='Path used to save output files (default: current directory)', required=False)
-parser.add_argument('-o', '--out_filename', help='Name of file to print the results table to (optional, default: screen output)', required=False)
-parser.add_argument('-y', '--only_assignccs', help='Only assign CCs from a table with NG-STAR STs. Indicate as value the number of the column that contains the STs (optional, default: None)', required=False)
-parser.add_argument('-z', '--only_assignsts', help='Only assign STs from a table with NG-STAR, MLST and/or NG-MAST profiles (optional, default: None)', required=False, action='store_true')
-parser.add_argument('-t', '--num_threads', help='Number of processes to use for computation (optional, default: 1)', required=False)
+parser.add_argument('-o', '--out_filename', help='Name of file to print the results table to (optional, default=screen output)', required=False)
+parser.add_argument('-y', '--only_assignccs', help='Only assign CCs from a table with NG-STAR STs. Indicate as value the number of the column that contains the STs (optional, default=None)', required=False)
+parser.add_argument('-z', '--only_assignsts', help='Only assign STs from a table with NG-STAR, MLST and/or NG-MAST profiles (optional, default=None)', required=False, action='store_true')
+parser.add_argument('-t', '--num_threads', help='Number of processes to use for computation (optional, default=1)', required=False)
 # Options for the database
 parser.add_argument('-p', '--path', help='Path to database containing MLST/NG-STAR alleles and profiles. If not available, use -d to create an updated database', required=False)
 parser.add_argument('-d', '--download_db', help='Download updated allele and profile files and create database', required=False, action='store_true')
 parser.add_argument('-n', '--db_name', help='Name of the folder that will contain the database in case a download is requested with -d (default=allelesDB in working directory)', required=False)
 parser.add_argument('-u', '--update', help='Only recreate the database pickle file', required=False, action='store_true')
 parser.add_argument('-cc', '--ngstarccsfile', help='File with the NG-STAR clonal complexes (NG-STAR CCs) database (csv) to integrate to NG-STAR profiles', required=False)
+if len(sys.argv)==1:
+	parser.print_help(sys.stderr)
+	sys.exit(0)
 arg = parser.parse_args()
 
 if __name__ == '__main__':
@@ -58,6 +63,7 @@ if __name__ == '__main__':
 	schemes = args['schemes']
 	ngstarccs = args['ngstarccs']
 	genogroups = args['genogroups']
+	mosaic_pena = args['mosaic_pena']
 	blast_new_alleles = args['blast_new_alleles']
 	allout = args['allout']
 	update = args['update']
@@ -76,7 +82,7 @@ if __name__ == '__main__':
 	else:
 		## Load dbs
 		allelesDB, allelesAC = load_db(db_path)
-		profilesDB, ngstarCCsdic = read_profiles(db_path, ngstarccs)
+		profilesDB, ngstarCCsdic, penAmosaicsdic = read_profiles(db_path, ngstarccs, mosaic_pena)
 		## Read input files
 		filelist = get_input(arg.input, arg.read_file)
 		## Define profiles and loci order 
@@ -84,7 +90,7 @@ if __name__ == '__main__':
 		NGSTARorder = ['penA', 'mtrR', 'porB', 'ponA', 'gyrA', 'parC', '23S']
 		NGMASTorder = ['POR', 'TBPB']
 		## Create header and set order of schemes
-		header, order = create_header(schemes, genogroups, ngstarccs, MLSTorder, NGSTARorder, NGMASTorder)
+		header, order = create_header(schemes, genogroups, ngstarccs, mosaic_pena, MLSTorder, NGSTARorder, NGMASTorder)
 		if only_assignccs:
 			input_file = filelist[0]
 			column = only_assignccs
@@ -100,7 +106,7 @@ if __name__ == '__main__':
 				print('## New allele sequences can only be saved with fasta files. Exiting...')
 				sys.exit()
 			input_file = filelist[0]
-			assign_sts_only(input_file, outfile, schemes, profilesDB, MLSTorder, NGSTARorder, NGMASTorder, ngstarccs, ngstarCCsdic)
+			assign_sts_only(input_file, outfile, schemes, profilesDB, MLSTorder, NGSTARorder, NGMASTorder, ngstarccs, ngstarCCsdic, mosaic_pena, penAmosaicsdic)
 
 	## Print schemes requested
 	sc = ','.join(schemes)
@@ -120,7 +126,7 @@ if __name__ == '__main__':
 	PORout_results = []
 	TBPBout_results = []
 	args_list = [(f, order, MLSTorder, NGSTARorder, NGMASTorder, profilesDB, allelesDB, allelesAC, schemes,
-				ngstarCCsdic, genogroups, db_path, PORout_results, TBPBout_results, allout, blast_new_alleles, out_path,
+				ngstarCCsdic, penAmosaicsdic, genogroups, db_path, PORout_results, TBPBout_results, allout, blast_new_alleles, out_path,
 				new_alleles, indices_new_alleles) for f in filelist]
 
 	with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
@@ -131,15 +137,6 @@ if __name__ == '__main__':
 
 	## Calculate genogroups if requested
 	genopergenome = calculate_genogroups(out_path, PORout_results, TBPBout_results, ngmastClusters) if genogroups else None
-
-	#if genogroups:
-	#	args_list2 = (out_path, PORout_results, TBPBout_results, ngmastClusters)
-	#	with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
-	#		results = executor.map(calculate_genogroups, out_path, PORout_results, TBPBout_results, ngmastClusters)
-	#
-	#	genopergenome = access_results(results, genogroups)
-	#else:
-	#	genopergenome = None
 
 	## Print final results
 	print_results(header, finalresults, genogroups, genopergenome, out_path, outfile)
