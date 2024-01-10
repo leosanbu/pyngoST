@@ -63,13 +63,14 @@ pyngoST.py -u -p /path/to/allelesDB -cc NGSTAR_CCs.csv
 ## Available options
 
 ```
-usage: pyngoST.py [options]
+usage: pyngoST [options]
 
 pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria gonorrhoeae genome collections
 
 Citation:
     Sanchez-Buso L, Sanchez-Serrano A, Golparian D and Unemo M.
     pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria gonorrhoeae genome collections.
+    Preprint: https://www.biorxiv.org/content/10.1101/2023.10.23.563537v2
     GitHub: https://github.com/leosanbu/pyngoST
 
 optional arguments:
@@ -82,18 +83,19 @@ optional arguments:
                         Typing schemes to query separated by commas (options: NG-STAR, MLST, NG-MAST) (default=NG-STAR)
   -g, --genogroups      Calculate NG-MAST genogroups from NG-MAST types (default=False)
   -c, --ngstarccs       Include NG-STAR CCs in output table (default=False)
+  -m, --mosaic_pena     Report if the penA allele sequence is a mosaic or semimosaic (default=False)
   -b, --blast_new_alleles
-                        Use blastn to find the closest alleles to new ones (default: False)
-  -a, --alleles_out     Print fasta files with new alleles (optional, default: False)
+                        Use blastn to find the closest alleles to new ones (default=False)
+  -a, --alleles_out     Print fasta files with new alleles (optional, default=False)
   -q OUT_PATH, --out_path OUT_PATH
                         Path used to save output files (default: current directory)
   -o OUT_FILENAME, --out_filename OUT_FILENAME
-                        Name of file to print the results table to (optional, default: screen output)
+                        Name of file to print the results table to (optional, default=screen output)
   -y ONLY_ASSIGNCCS, --only_assignccs ONLY_ASSIGNCCS
-                        Only assign CCs from a table with NG-STAR STs. Indicate as value the number of the column that contains the STs (optional, default: None)
-  -z, --only_assignsts  Only assign STs from a table with NG-STAR, MLST and/or NG-MAST profiles (optional, default: None)
+                        Only assign CCs from a table with NG-STAR STs. Indicate as value the number of the column that contains the STs (optional, default=None)
+  -z, --only_assignsts  Only assign STs from a table with NG-STAR, MLST and/or NG-MAST profiles (optional, default=None)
   -t NUM_THREADS, --num_threads NUM_THREADS
-                        Number of processes to use for computation (optional, default: 1)
+                        Number of processes to use for computation (optional, default=1)
   -p PATH, --path PATH  Path to database containing MLST/NG-STAR alleles and profiles. If not available, use -d to create an updated database
   -d, --download_db     Download updated allele and profile files and create database
   -n DB_NAME, --db_name DB_NAME
@@ -110,6 +112,7 @@ optional arguments:
 | -s | schemes to query and report: NG-STAR,MLST,NG-STAR or any combination/order separated by commas. |
 | -g | calculate NG-MAST genogroups from NG-MAST typing using the rules described in [Harris et al, 2018](https://doi.org/10.1016/S1473-3099(18)30225-1). |
 | -c | report NG-STAR Clonal Complexes from NG-STAR STs in the final results table. |
+| -m | report the type of penA mosaicism (mosaic, semi-mosaic or non-mosaic). |
 | -b | blast new alleles to identify the closest among the known ones. |
 | -a | save new alleles to output fasta files. |
 | -o | name of output file where to save the results table. By default, results will print to the screen. |
