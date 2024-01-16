@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import warnings
+warnings.filterwarnings("ignore")
+
 import os
 import sys
 import glob

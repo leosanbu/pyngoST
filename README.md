@@ -34,6 +34,11 @@ source venv/bin/activate
 deactivate
 ```
 
+**NOTE**: After installing with `pip`, the package can be run from `/Users/username/venv/lib/python3.X/site-packages/pyngoST/pyngoST.py`. You can add it to your PATH or create an alias to use it more easily, as in:
+```
+alias pyngoST.py="/Users/username/venv/bin/python3 /Users/username/venv/lib/python3.X/site-packages/pyngoST/pyngoST.py"
+```
+
 ## Bulding the database
 
 You can download updated allele and profiles files for the three schemes using `-d`. NG-STAR alleles and profiles will be downloaded and adapted from [NG-STAR Canada](https://ngstar.canada.ca/)). MLST and NG-MAST alleles and profiles will be downloaded from [PubMLST Neisseria](https://pubmlst.org/bigsdb?db=pubmlst_mlst_seqdef). By default, it will create the database under the `allelesDB` folder if it does not exist in the working directory. You can provide a database name with `-n`. If a CSV file containing NG-STAR CCs is included with `-cc`, CCs will be integrated into the database.

@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import os
 import re
 import sys
@@ -718,7 +721,10 @@ def process_files(args):
 				st_list['NG-STAR'] = st+'\t'+prof
 			if penAmosaicsdic:
 				penA = prof.split('\t')[0]
-				st_list['NG-STAR'] += '\t'+penAmosaicsdic[penA]
+				if penA=='-':
+					st_list['NG-STAR'] += '\t-'
+				else:
+					st_list['NG-STAR'] += '\t'+penAmosaicsdic[penA]
 		elif s=='NG-MAST':
 			prof = report_profile(NGMASTorder, resultsDB)
 			st = profilesDB['NGMAST'].get(prof, '-')

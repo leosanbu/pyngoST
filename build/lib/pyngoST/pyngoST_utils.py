@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import glob
 import subprocess
@@ -31,6 +32,7 @@ def get_args(arg):
 		'out_path': arg.out_path if arg.out_path else os.getcwd(),
 		'schemes': arg.schemes.split(',') if arg.schemes else ['NG-STAR'],
 		'ngstarccs': arg.ngstarccs if arg.ngstarccs else False,
+		'mosaic_pena': arg.mosaic_pena if arg.mosaic_pena else False,
 		'genogroups': True if arg.genogroups else False,
 		'blast_new_alleles': True if arg.blast_new_alleles else False,
 		'allout': True if arg.alleles_out else False,
@@ -132,9 +134,12 @@ def download_updated_dbs(db_path, ccsfile):
 	locistar = ['penA', 'mtrR', 'porB', 'ponA', 'gyrA', 'parC', '23S']
 	ngstarURLloci = 'https://ngstar.canada.ca/alleles/download?lang=en&loci_name='
 	ngstarNGSTARs = 'https://ngstar.canada.ca/sequence_types/download?lang=en'
+	ngstarMOSAIC = 'https://ngstar.canada.ca/alleles/download_metadata?lang=en&loci_name=penA'
+	# Download allele fasta files
 	for g in locistar:
 		r = requests.get(ngstarURLloci+g, allow_redirects=True, verify=False)
 		open(db_path+'/'+g+'.fas', 'wb').write(r.content)
+	# Download and process profiles
 	s = requests.get(ngstarNGSTARs, allow_redirects=True, verify=False)
 	open(db_path+'/NGSTAR_profiles.xlsx', 'wb').write(s.content)
 	df = pd.read_excel(db_path+'/NGSTAR_profiles.xlsx', sheet_name='Sheet 1')
@@ -157,6 +162,34 @@ def download_updated_dbs(db_path, ccsfile):
 			outfile.write('\t'.join(linesplit)+'\n')
 	if 'NGSTAR_profiles.tmp.tab' in os.listdir(db_path):
 		subprocess.call(['rm', db_path+'/NGSTAR_profiles.tmp.tab'])
+	# Download penA alleles metadata to extract mosaic information
+	r = requests.get(ngstarMOSAIC, allow_redirects=True, verify=False)
+	open(db_path+'/penA_alleles_metadata.xlsx', 'wb').write(r.content)
+	df2 = pd.read_excel(db_path+'/penA_alleles_metadata.xlsx', sheet_name='Sheet 1')
+	with open(db_path+'/penA_metadata.tmp.tab', 'w') as outfile2:
+		df2.to_string(outfile2, index=None)
+	outmeta = open(db_path+'/penA_mosaics.tab', 'w+')
+	outmeta.write('penA_allele'+'\t'+'mosaic_type'+'\n')
+	with open(db_path+'/penA_metadata.tmp.tab', 'r') as metadata:
+		for line in metadata:
+			linesplit=re.split(' |;|,|:', line)
+			linesplit2=[x for x in linesplit if x!='']
+			if linesplit2[0] != 'Allele':
+				found = 0
+				for x in linesplit2:
+					if 'Mosaic' in x:
+						mosaicline = linesplit2[0]+'\t'+x
+						outmeta.write(mosaicline+'\n')
+						found = 1
+					elif 'mosaic' in x:
+						mosaicline = linesplit2[0]+'\t'+x
+						outmeta.write(mosaicline+'\n')
+						found = 1
+				if found == 0:
+					mosaicline = linesplit2[0]+'\t-'
+					outmeta.write(mosaicline+'\n')
+	if 'penA_metadata.tmp.tab' in os.listdir(db_path):
+		subprocess.call(['rm', db_path+'/penA_metadata.tmp.tab'])
 
 def read_alleles(path):
 	allelesDB = {}
@@ -175,9 +208,8 @@ def read_alleles(path):
 				allelesDB[str(rc)] = Allele(gene, name, 1)
 	return allelesDB
 
-def read_profiles(path, ngstarccs):
+def read_profiles(path, ngstarccs, mosaic_pena):
 	pathsfile = glob.glob(path+'/'+'*profiles.tab')
-	#pathsfile = [os.path.normpath(i) for i in pathsfile]
 	paths = []
 	for p in pathsfile:
 		tmp = p.split('/').pop().replace('_profiles.tab', '')
@@ -201,7 +233,14 @@ def read_profiles(path, ngstarccs):
 								sys.exit()
 				profilesDB[profile] = st
 		profilesdic[paths[n]] = profilesDB
-	return profilesdic, ngstardic
+		mosaicpenadic = {}
+		if mosaic_pena:
+			with open(path+'/penA_mosaics.tab', 'r') as mosaics:
+				for line in mosaics:
+					if 'penA_allele' not in line:
+						linesplit=line.strip().split()
+						mosaicpenadic[linesplit[0]] = linesplit[1]
+	return profilesdic, ngstardic, mosaicpenadic
 
 def read_ngstar_ccs(file):
 	ngstarCCs = {}
@@ -269,7 +308,7 @@ def assign_ccs_only(filename, outfilename, ngstarccs, ngstarCCsdic, column):
 		print('## Please, include -c to get the NG-STAR CCs')
 	sys.exit()
 
-def assign_sts_only(filename, outfilename, schemes, profilesDB, MLSTorder, NGSTARorder, NGMASTorder, ngstarccs, ngstarCCsdic):
+def assign_sts_only(filename, outfilename, schemes, profilesDB, MLSTorder, NGSTARorder, NGMASTorder, ngstarccs, ngstarCCsdic, mosaic_pena, penAmosaicsdic):
 	resultsvec = []
 	with open(filename, 'r') as tab:
 		header = next(tab)
@@ -293,6 +332,8 @@ def assign_sts_only(filename, outfilename, schemes, profilesDB, MLSTorder, NGSTA
 				newheader.append(sep.join(NGSTARorder))
 				if ngstarccs:
 					newheader.append('NG-STAR_CC')
+				if mosaic_pena:
+					newheader.append('penA_mosaic_type')
 		resultsvec.append(sep.join(newheader))
 		# Get all loci and assign STs	
 		save_all = {}
@@ -333,6 +374,13 @@ def assign_sts_only(filename, outfilename, schemes, profilesDB, MLSTorder, NGSTA
 						else:
 							cc = '-'
 						to_join.append(cc)
+					if mosaic_pena:
+						penA_al = NGSTARprof[0]
+						if penA_al in penAmosaicsdic:
+							penmos = penAmosaicsdic[penA_al]
+						else:
+							penmos = '-'
+						to_join.append(penmos)
 			resultsvec.append(sep.join(to_join))
 		# Print results
 		if outfilename:
@@ -570,7 +618,7 @@ def calculate_genogroups(out_path, PORout_results, TBPBout_results, ngmastCluste
 				genopergenome[sample[0]] = '-'
 	return genopergenome
 
-def create_header(schemes, genogroups, ngstarccs, MLSTorder, NGSTARorder, NGMASTorder):
+def create_header(schemes, genogroups, ngstarccs, mosaic_pena, MLSTorder, NGSTARorder, NGMASTorder):
 	# Create and print output header
 	header = ['strain']
 	order = []
@@ -585,6 +633,8 @@ def create_header(schemes, genogroups, ngstarccs, MLSTorder, NGSTARorder, NGMAST
 			order+=NGSTARorder
 			if ngstarccs:
 				header+=['NG-STAR_CC']
+			if mosaic_pena:
+				header+=['penA_mosaic_type']
 		elif s=='NG-MAST':
 			tmporder = ['NG-MAST']+NGMASTorder
 			header+=tmporder
@@ -595,7 +645,7 @@ def create_header(schemes, genogroups, ngstarccs, MLSTorder, NGSTARorder, NGMAST
 
 def process_files(args):
 	fpath, order, MLSTorder, NGSTARorder, NGMASTorder, profilesDB, allelesDB, allelesAC, schemes, \
-    ngstarCCsdic, genogroups, db_path, PORout_results, TBPBout_results, allout, blast_new_alleles, out_path, \
+    ngstarCCsdic, penAmosaicsdic, genogroups, db_path, PORout_results, TBPBout_results, allout, blast_new_alleles, out_path, \
     new_alleles, indices_new_alleles = args
 	fname = fpath.split('/').pop()
 	blast_hit = 0
@@ -666,6 +716,9 @@ def process_files(args):
 						st_list['NG-STAR'] = st+'\t'+prof+'\tCC'+ngstarCCsdic[st]
 			else:		
 				st_list['NG-STAR'] = st+'\t'+prof
+			if penAmosaicsdic:
+				penA = prof.split('\t')[0]
+				st_list['NG-STAR'] += '\t'+penAmosaicsdic[penA]
 		elif s=='NG-MAST':
 			prof = report_profile(NGMASTorder, resultsDB)
 			st = profilesDB['NGMAST'].get(prof, '-')

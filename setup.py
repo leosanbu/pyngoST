@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pyngoST',
-    version='1.0.0',
+    version='1.1.1',
     author='Leonor Sanchez-Buso',
     author_email='leonor.sanchez@fisabio.es',
     description='pyngoST: fast, simultaneous and accurate and multiple sequence typing of Neisseria gonorrhoeae genome collections',
