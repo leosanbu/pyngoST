@@ -1,3 +1,4 @@
+db/allelesDB_130524_updated/
 db/allelesDB_old
 db/230504_NGSTAR_CC_updated.xlsx
 db/allelesDB_160523
@@ -7,4 +8,5 @@ db/allelesDB_140124
 */.DS_Store
 .DS_Store
 pyngoST/__init__.py
+pyngoST/__pycache__
 pyngoST.egg-info

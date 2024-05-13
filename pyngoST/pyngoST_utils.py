@@ -103,11 +103,11 @@ def download_updated_dbs(db_path, ccsfile):
 	# MLST and NG-MAST v2 from PubMLST
 	print('## Downloading MLST and NG-MAST v2 alleles and Sequence Type profiles from https://pubmlst.org')
 	loci = ['abcZ', 'adk', 'aroE', 'fumC', 'gdh', 'pdhC', 'pgm', 'NG-MAST_porB', 'NG-MAST_tbpB']
-	pubmlstURLloci = 'https://pubmlst.org/bigsdb?db=pubmlst_neisseria_seqdef&page=downloadAlleles&locus='
-	pubmlstMLSTs = 'https://pubmlst.org/bigsdb?db=pubmlst_neisseria_seqdef&page=downloadProfiles&scheme_id=1'
-	pubmlstNGMASTs = 'https://pubmlst.org/bigsdb?db=pubmlst_neisseria_seqdef&page=downloadProfiles&scheme_id=71'
+	pubmlstURLloci = 'https://rest.pubmlst.org/db/pubmlst_neisseria_seqdef/loci/'#abcZ/alleles_fasta'
+	pubmlstMLSTs = 'https://rest.pubmlst.org/db/pubmlst_neisseria_seqdef/schemes/1/profiles_csv'
+	pubmlstNGMASTs = 'https://rest.pubmlst.org/db/pubmlst_neisseria_seqdef/schemes/71/profiles_csv'
 	for g in loci:
-		r = requests.get(pubmlstURLloci+g, allow_redirects=True)
+		r = requests.get(pubmlstURLloci+g+'/alleles_fasta', allow_redirects=True)
 		open(db_path+'/'+g+'.fas', 'wb').write(r.content)
 	m = requests.get(pubmlstMLSTs, allow_redirects=True)
 	open(db_path+'/MLST_profiles.tab', 'wb').write(m.content)
@@ -145,7 +145,7 @@ def download_updated_dbs(db_path, ccsfile):
 	# Download and process profiles
 	s = requests.get(ngstarNGSTARs, allow_redirects=True, verify=False)
 	open(db_path+'/NGSTAR_profiles.xlsx', 'wb').write(s.content)
-	df = pd.read_excel(db_path+'/NGSTAR_profiles.xlsx', sheet_name='Sheet 1')
+	df = pd.read_excel(db_path+'/NGSTAR_profiles.xlsx', sheet_name='Sheet 1', engine='openpyxl')
 	with open(db_path+'/NGSTAR_profiles.tmp.tab', 'w') as outfile:
 		df.to_string(outfile, index=None)
 	outfile = open(db_path+'/NGSTAR_profiles.tab', 'w+')
@@ -168,7 +168,7 @@ def download_updated_dbs(db_path, ccsfile):
 	# Download penA alleles metadata to extract mosaic information
 	r = requests.get(ngstarMOSAIC, allow_redirects=True, verify=False)
 	open(db_path+'/penA_alleles_metadata.xlsx', 'wb').write(r.content)
-	df2 = pd.read_excel(db_path+'/penA_alleles_metadata.xlsx', sheet_name='Sheet 1')
+	df2 = pd.read_excel(db_path+'/penA_alleles_metadata.xlsx', sheet_name='Sheet 1', engine='openpyxl')
 	with open(db_path+'/penA_metadata.tmp.tab', 'w') as outfile2:
 		df2.to_string(outfile2, index=None)
 	outmeta = open(db_path+'/penA_mosaics.tab', 'w+')
@@ -297,7 +297,12 @@ def assign_ccs_only(filename, outfilename, ngstarccs, ngstarCCsdic, column):
 					cc = ngstarCCsdic[st]
 				else:
 					cc = '-'
-				ngstarccsvec.append(sep.join(linesplit)+sep+'CC'+cc)
+				if cc=='Ungroupable':
+					ngstarccsvec.append(sep.join(linesplit)+sep+cc)
+				elif cc=='-':
+					st_list['NG-STAR'] = st+'\t'+prof+'\t-'
+				else:
+					ngstarccsvec.append(sep.join(linesplit)+sep+'CC'+cc)
 		# Print results
 		if outfilename:
 			outfilehandle = open(outfilename, 'w+')
@@ -373,7 +378,12 @@ def assign_sts_only(filename, outfilename, schemes, profilesDB, MLSTorder, NGSTA
 					to_join.append(sep.join(NGSTARprof))
 					if ngstarccs:
 						if ngstar in ngstarCCsdic:
-							cc = 'CC'+ngstarCCsdic[ngstar]
+							if ngstarCCsdic[ngstar]=="Ungroupable":
+								cc = 'Ungroupable'
+							elif ngstarCCsdic[ngstar]=='-':
+								cc = '-'
+							else:
+								cc = 'CC'+ngstarCCsdic[ngstar]
 						else:
 							cc = '-'
 						to_join.append(cc)
@@ -652,8 +662,8 @@ def process_files(args):
     new_alleles, indices_new_alleles = args
 	fname = fpath.split('/').pop()
 	blast_hit = 0
-	if not fpath.endswith('.fasta') or fpath.endswith('.fas') or fpath.endswith('.fa'):
-		print('## Input file is not recognised as a fasta file. Please, include fasta files ending in .fasta, .fas or .fa')
+	if not fpath.endswith('.fasta') or fpath.endswith('.fas') or fpath.endswith('.fa') or fpath.endswith('.fna'):
+		print('## Input file is not recognised as a fasta file. Please, include fasta files ending in .fasta, .fas, .fa or .fna')
 		sys.exit()
 	with open(fpath, 'r') as fasta:
 		concat = ''
