@@ -75,7 +75,7 @@ pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria g
 Citation:
     Sanchez-Buso L, Sanchez-Serrano A, Golparian D and Unemo M.
     pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria gonorrhoeae genome collections.
-    Preprint: https://www.biorxiv.org/content/10.1101/2023.10.23.563537v2
+    Preprint: https://doi.org/10.1099/mgen.0.001189
     GitHub: https://github.com/leosanbu/pyngoST
 
 optional arguments:
@@ -249,7 +249,7 @@ pyngoST.py -i /path/to/400genomes/*.fasta -p /path/to/allelesDB -s MLST,NG-MAST,
 ```
 The request of NG-STAR CCs with `-c` is not a calculation but only a query of the existing database and it does not add significantly more computation time compared to not requesting CCs.
 
-## Installation
+## Citation
 
 If you use `pyngoST` or integrate it into your pipelines and use it in a scientific publication, we would appreciate if you could cite our work:
 
