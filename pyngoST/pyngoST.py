@@ -23,7 +23,7 @@ parser = arg.ArgumentParser(prog="pyngoST",
 	'\nCitation:\n'
 	'    Sanchez-Buso L, Sanchez-Serrano A, Golparian D and Unemo M.\n'
 	'    pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria gonorrhoeae genome collections.\n'
-	'    Preprint: https://www.biorxiv.org/content/10.1101/2023.10.23.563537v2\n'
+	'    Publication: https://doi.org/10.1099/mgen.0.001189\n'
 	'    GitHub: https://github.com/leosanbu/pyngoST\n',
 	usage = '%(prog)s [options]')
 
