@@ -248,3 +248,11 @@ Please note that only computationally intensive tasks are worth multithreading, 
 pyngoST.py -i /path/to/400genomes/*.fasta -p /path/to/allelesDB -s MLST,NG-MAST,NG-STAR -c -g -b -t 8
 ```
 The request of NG-STAR CCs with `-c` is not a calculation but only a query of the existing database and it does not add significantly more computation time compared to not requesting CCs.
+
+## Installation
+
+If you use `pyngoST` or integrate it into your pipelines and use it in a scientific publication, we would appreciate if you could cite our work:
+
+Sánchez-Busó L, Sánchez-Serrano A, Golparian D, Unemo M. pyngoST: fast, simultaneous and accurate multiple sequence typing of Neisseria gonorrhoeae genome collections. Microb Genom. 2024 Jan;10(1):001189. doi: 10.1099/mgen.0.001189. PMID: 38288762; PMCID: PMC10868605.
+
+
