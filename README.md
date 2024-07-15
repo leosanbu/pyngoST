@@ -158,7 +158,7 @@ Use `-o <outfilename>` to save output to file.
 
 ### Blasting new allele sequences
 
-Blasting of new alleles to find the closest among the known ones can be requested with `-b`. These new alleles can be saved to fasta files with `-a`.
+Blasting of new alleles to find the closest among the known ones can be requested with `-b`. These new alleles can be saved to fasta files with `-a`. Please, note that you need to have a blast installation in your PATH.
 ```
 pyngoST.py -i *.fasta -p /path/to/allelesDB -s MLST,NG-MAST,NG-STAR -b -a
 ```
@@ -176,6 +176,11 @@ The structure of the sequence name is as follows:
 where the coordinates indicate the exact position in the contig where this sequence was extracted. 
 
 New allelic sequences and STs should be submitted to curators at [PubMLST Neisseria](https://pubmlst.org/bigsdb?db=pubmlst_mlst_seqdef) or [NG-STAR Canada](https://ngstar.canada.ca/) for assignment.
+
+**NOTE**: From v1.1.3, pyngoST tries to find a specific trimming end for novel TBPB alleles (...AAAA####). It tries its best, however, sometimes it is confused by another similar region nearby. In this case, longer sequences are given as output and will need to be manually curated by users. A warning message will specify which output files are affected, e.g.:
+```
+# Warning: ECDC_PL18_047.fasta.TBPB.fasta is longer than 450 bp, please revise end trimming before submitting to PubMLST.
+```
 
 ## Running pyngoST from csv/tab files
 
