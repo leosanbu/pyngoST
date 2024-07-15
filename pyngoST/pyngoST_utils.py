@@ -91,8 +91,7 @@ def update_db(db_path, ccsfile):
 	make_ACautomaton(db_path, allelesDB)
 	sys.exit()
 
-def load_db(db_path):
-	# Load pickled database - dictionary and automaton    
+def load_db(db_path): # Load pickled database - dictionary and automaton
 	print('## Loading databases...')
 	allelesDB, allelesAC = pickle.load(open(db_path+'/'+'ST_alleles_AC.pkl', 'rb'))
 	return allelesDB, allelesAC
@@ -416,8 +415,7 @@ def revcomp(seq):
 def report_profile(order, results):
 	profile = ''
 	for i in order:
-		# check if multiple alleles (i.e. 23S)
-		check_copies = results[i]
+		check_copies = results[i] # check if multiple alleles (i.e. 23S)
 		if len(check_copies)>1:
 			unique_copies = '_'.join(list(pd.unique(results[i])))
 			if profile == '':
@@ -465,6 +463,7 @@ def blast_newalleles(query, subject, path):
 	return ret
 
 def print_newallele_seqs(gene, coords, contigloc, fasta, allout, path):
+	outfile = fasta.split('/').pop()+'.'+gene+'.fasta'
 	strand = 1
 	startcoord, endcoord = coords
 	if startcoord > endcoord:
@@ -475,8 +474,33 @@ def print_newallele_seqs(gene, coords, contigloc, fasta, allout, path):
 	locus = genome[contigloc][(startcoord-1):endcoord]
 	if strand == -1:
 		locus.seq = revcomp(locus.seq)
+	if gene == 'TBPB': ## trim at a specific end site AAAA####
+		findAAAA = locus.seq.rfind('AAAA') 
+		endtrim = findAAAA+8
+		if endtrim > len(locus.seq):
+			if strand == -1:
+				locus2 = genome[contigloc][(startcoord-1)-10:endcoord]
+				locus2.seq = revcomp(locus2.seq)
+			else:
+				locus2 = genome[contigloc][(startcoord-1):endcoord+10]
+			findAAAA = locus2.seq.rfind('AAAA')
+			endtrim = findAAAA+8
+			locus.seq = locus2.seq[:endtrim]
+		else:
+			if findAAAA < 370: # if found AAAA is too early in the sequence
+				if strand == -1:
+					locus2 = genome[contigloc][(startcoord-1)-70:endcoord]
+					locus2.seq = revcomp(locus2.seq)
+				else:
+					locus2 = genome[contigloc][(startcoord-1):endcoord+70]
+				findAAAA = locus2.seq.rfind('AAAA')
+				endtrim = findAAAA+8
+				locus.seq = locus2.seq[:endtrim]
+			else:
+				locus.seq = locus.seq[:endtrim]
+		if endtrim > 450:
+			print('\n# Warning: '+outfile+' is longer than 450 bp, please revise end trimming before submitting to PubMLST.')
 	# print to file
-	outfile = fasta.split('/').pop()+'.'+gene+'.fasta'
 	if allout:
 		with open(path+'/'+outfile, 'w') as out:
 			out.write('>'+gene+'_'+locus.name+'_'+str(startcoord)+':'+str(endcoord)+'\n')
@@ -733,6 +757,14 @@ def process_files(args):
 				penA = prof.split('\t')[0]
 				if penA=='-':
 					st_list['NG-STAR'] += '\t-'
+				elif '-' in penA: #to remove, i.e. '-1' from '2.002-1' so it can be found on 
+					penA = penA.split('-')[0]
+					print(penA)
+					print(penAmosaicsdic[penA])
+					if penAmosaicsdic[penA] == 'Mosaic':
+						st_list['NG-STAR'] += '\tMosaic-like'
+					else:
+						st_list['NG-STAR'] += '\tNonMosaic-like'
 				else:
 					st_list['NG-STAR'] += '\t'+penAmosaicsdic[penA]
 		elif s=='NG-MAST':
