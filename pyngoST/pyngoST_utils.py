@@ -686,7 +686,7 @@ def process_files(args):
     new_alleles, indices_new_alleles = args
 	fname = fpath.split('/').pop()
 	blast_hit = 0
-	if not fpath.endswith('.fasta') or fpath.endswith('.fas') or fpath.endswith('.fa') or fpath.endswith('.fna'):
+	if not (fpath.endswith('.fasta') or fpath.endswith('.fas') or fpath.endswith('.fa') or fpath.endswith('.fna')):
 		print('## Input file is not recognised as a fasta file. Please, include fasta files ending in .fasta, .fas, .fa or .fna')
 		sys.exit()
 	with open(fpath, 'r') as fasta:
