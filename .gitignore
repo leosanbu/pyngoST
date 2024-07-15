@@ -11,3 +11,4 @@ db/allelesDB_140124
 pyngoST/__init__.py
 pyngoST/__pycache__
 pyngoST.egg-info
+build/
