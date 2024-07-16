@@ -445,11 +445,23 @@ def blast_newalleles(query, subject, path):
 		max_bitscore = bresult[11].max()
 		# get alleles with same bitscore
 		subresult = bresult.loc[bresult[11] == max_bitscore]
+		# if the beginning of the sequence is not there, search for hits spanning position 1, get max bitscore and concatenate tables
+		if subresult.iloc[0,6] != 1:
+			subone = bresult.loc[bresult[6] == 1]
+			max_bitone = subone[11].max()
+			suboneresult = subone.loc[subone[11] == max_bitone]
+			subresult = pd.concat([subresult, suboneresult], ignore_index=True)
 		sublist = subresult[[0]][0].tolist()
-		# get coordinates of queried alleles
-		coords = subresult.iloc[0,8:10].tolist()
-		# get contig name of hit
-		contigloc = subresult.iloc[0,1]
+		# get coordinates of queried alleles and contig name of hit
+		if len(subresult)>1:
+			coords = [subresult[8].min(), subresult[9].max()]
+			contigloc = subresult[1].unique().tolist()
+			contigloc = '|'.join(contigloc)
+			locusname = query.replace('.fas', '')
+			print('# Warning: multiple BLAST hits for '+locusname+' in '+subject_name+', please revise trimming before submitting a novel allele.')
+		else:
+			coords = subresult.iloc[0,8:10].tolist()
+			contigloc = subresult.iloc[0,1]
 		# Only first three closest alleles remain
 		clean_alleles = []
 		for x in sublist[0:3]:
@@ -499,7 +511,7 @@ def print_newallele_seqs(gene, coords, contigloc, fasta, allout, path):
 			else:
 				locus.seq = locus.seq[:endtrim]
 		if endtrim > 450:
-			print('\n# Warning: '+outfile+' is longer than 450 bp, please revise end trimming before submitting to PubMLST.')
+			print('# Warning: '+outfile+' is longer than 450 bp, please revise end trimming before submitting to PubMLST.')
 	# print to file
 	if allout:
 		with open(path+'/'+outfile, 'w') as out:
