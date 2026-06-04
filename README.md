@@ -1,5 +1,9 @@
 # pyngoST: multiple sequence typing of _Neisseria gonorrhoeae_ assembly collections
 
+[![Database DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20540800.svg)](https://doi.org/10.5281/zenodo.20540800)
+
+> 📦 **Database**: the pre-built allele and profile database is archived on Zenodo — [download it here](https://doi.org/10.5281/zenodo.20540800). See [Pre-built database (Zenodo)](#pre-built-database-zenodo) below.
+
 `pyngoST` unifies molecular typing for _Neisseria gonorrhoeae_. By providing genome assemblies in fasta format, `pyngoST` can extract up to three typing schemes (NG-STAR, MLST and NG-MAST) and two modifications (NG-STAR Clonal Complexes and NG-MAST Genogroups). These schemes are detailed below:
 * **NG-STAR**: _N. gonorrhoeae_ Sequence Typing for Antimicrobial Resistance, hosted at Public Health Agency of Canada, National Microbiology Laboratory [NG-STAR Canada](https://ngstar.canada.ca/). This is a typing scheme published by [Demczuk et al. 2017](https://doi.org/10.1128/JCM.00100-17) that targets 7 genes associated to cephalosporin, macrolides and fluoroquinolones resistance: _**penA**, **mtrR**, **porB**, **ponA**, **gyrA**, **parC**_ and _**23S rRNA**_.
 * **NG-STAR CCs** (Clonal Complexes), published by [Golparian et al, 2021](https://doi.org/10.1093/jac/dkaa552). This scheme groups NG-STAR sequence types (STs) into Clonal Complexes (CCs) for a better fit of the typing scheme with the population structure of antimicrobial resistant (AMR) lineages.
@@ -38,6 +42,26 @@ deactivate
 ```
 alias pyngoST.py="/Users/username/venv/bin/python3 /Users/username/venv/lib/python3.X/site-packages/pyngoST/pyngoST.py"
 ```
+
+## Pre-built database (Zenodo)
+
+A ready-to-use, versioned snapshot of the `pyngoST` allele and profile database is archived on Zenodo. This is the quickest way to get started: download it instead of building the database from scratch with `-d`. Each release of the database has its own version and DOI on Zenodo, so analyses remain reproducible.
+
+* **Download (latest version)**: [allelesDB on Zenodo](https://doi.org/10.5281/zenodo.20540800)
+* **Concept DOI** (always resolves to the newest version): `10.5281/zenodo.20540800`
+
+The command below always fetches the **latest** database version: it uses the Zenodo *concept* record (`20540800`), which redirects to the most recent version's file.
+
+```
+## Download and unzip the latest pre-built database
+curl -L -o allelesDB.zip "https://zenodo.org/records/20540800/files/allelesDB.zip?download=1"
+unzip allelesDB.zip
+
+## Use it directly with -p
+pyngoST.py -i *.fasta -p /path/to/allelesDB -s NG-STAR,MLST,NG-MAST
+```
+
+**NOTE**: The database is not stored in this GitHub repository because of its size. If you prefer to build the latest database yourself from the source repositories, use `-d` as described below.
 
 ## Bulding the database
 
