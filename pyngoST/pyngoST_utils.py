@@ -416,7 +416,9 @@ def report_profile(order, results):
 	for i in order:
 		check_copies = results[i] # check if multiple alleles (i.e. 23S)
 		if len(check_copies)>1:
-			unique_copies = '_'.join(list(pd.unique(results[i])))
+			# de-duplicate while preserving order; works on a plain list, unlike
+			# pd.unique which requires a Series/array in recent pandas versions
+			unique_copies = '_'.join(dict.fromkeys(results[i]))
 			if profile == '':
 				profile = unique_copies
 			else:
