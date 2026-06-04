@@ -527,20 +527,28 @@ def make_ACautomaton(path, allelesDB):
  
 def ac_fast(fname, seq, order, allelesDB, allelesAC, genogroups, out_path, PORout_results, TBPBout_results):
 	results = {}
+	# For each gene keep the longest matching allele: (length, allele, sequence, direction)
+	best = {}
 	for i in order:
 		results[i] = ['-']
+		best[i] = None
 	for end_index, (insert_order, original_value) in allelesAC.iter(seq):
 		gene = allelesDB[original_value].gene
 		allele = allelesDB[original_value].allele
 		direction = allelesDB[original_value].revcomp
 		if gene in order:
-			if type(gene) is not list:
-				results[gene] = [allele]
-			else:
-				results[gene].append(allele)
+			# When one allele's sequence is a subset of another (e.g. a premature
+			# stop codon makes it a substring of a longer allele), the Aho-Corasick
+			# search reports both. Keep only the longest match for each gene rather
+			# than overwriting with whichever allele happened to be found last.
+			if best[gene] is None or len(original_value) > best[gene][0]:
+				best[gene] = (len(original_value), allele, original_value, direction)
+	for gene in order:
+		if best[gene] is not None:
+			results[gene] = [best[gene][1]]
 			# save POR and TBPB sequences if genogroups are requested
 			if genogroups:
-				save_ngmast_genes(fname, original_value, gene, allele, direction, out_path, PORout_results, TBPBout_results)
+				save_ngmast_genes(fname, best[gene][2], gene, best[gene][1], best[gene][3], out_path, PORout_results, TBPBout_results)
 	return results
 
 def save_ngmast_genes(fname, seq, gene, allele, direction, out_path, PORout_results, TBPBout_results):
