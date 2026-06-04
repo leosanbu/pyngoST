@@ -27,6 +27,12 @@ source venv/bin/activate
 ## Install pyngoST using pip install on the latest distribution
 pip install pyngoST
 ```
+
+**RECOMMENDED**: The PyPI distribution is not updated as frequently as this GitHub repository. To work with the most up-to-date version of `pyngoST`, we recommend installing directly from GitHub:
+```
+## Install the latest version directly from GitHub
+pip install git+https://github.com/leosanbu/pyngoST.git
+```
 Activate the virtual environment whenever you want to use `pyngoST`. Exit the virtual environment by running `deactivate`:
 ```
 ## Activate virtualenv

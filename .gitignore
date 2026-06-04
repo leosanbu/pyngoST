@@ -1,7 +1,6 @@
 db/NG-STAR_CC_db_250213.xlsx
 db/previous_versions/*
-db/allelesDB_060526/
-db/allelesDB_060526.zip
+db/allelesDB*
 */.DS_Store
 .DS_Store
 pyngoST/__init__.py

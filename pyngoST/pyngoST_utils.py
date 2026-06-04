@@ -15,7 +15,6 @@ from Bio import SeqIO, AlignIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from pyfaidx import Fasta
-from Bio.Align.Applications import MuscleCommandline
 
 ## Classes ##
 
@@ -563,14 +562,25 @@ def write_ngmast_genes(filename, results):
 		SeqIO.write(r, filename, 'fasta')
 
 def align_sequences(infilename, outfilename):
-	#use maxiters=2 for speed
-	cline = MuscleCommandline("muscle", input=infilename, out=outfilename) #maxiters=maxiters
-	try:
-		stdout, stderr = cline()
-	except OSError:
-		print("Alignment failed:")
-		print(cline)
-		sys.exit()
+	# Call MUSCLE directly via subprocess so this does not depend on Biopython's
+	# MuscleCommandline wrapper, which was removed in Biopython >=1.81. This is only
+	# used by the NG-MAST genogroups feature (-g). MUSCLE v3 and v5 have different
+	# command-line syntaxes, so try v3 first and fall back to v5.
+	commands = [
+		["muscle", "-in", infilename, "-out", outfilename],          # MUSCLE v3.x
+		["muscle", "-align", infilename, "-output", outfilename],     # MUSCLE v5.x
+	]
+	for cmd in commands:
+		try:
+			result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		except OSError:
+			print("Alignment failed: 'muscle' was not found. Please install MUSCLE and make sure it is in your PATH.")
+			sys.exit()
+		if result.returncode == 0:
+			return
+	print("Alignment failed:")
+	print(" ".join(commands[0]))
+	sys.exit()
 
 def calculate_distances(aln):
 	align = AlignIO.read(aln, "fasta")
