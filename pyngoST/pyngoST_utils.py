@@ -771,8 +771,14 @@ def process_files(args):
 					st_list['NG-STAR'] += '\t-'
 				elif '-' in penA: #to remove, i.e. '-1' from '2.002-1' so it can be found on 
 					penA = penA.split('-')[0]
-					print(penA)
-					print(penAmosaicsdic[penA])
+					if '|' in penA:
+						penA = penA.split('|')[0]
+					if penAmosaicsdic[penA] == 'Mosaic':
+						st_list['NG-STAR'] += '\tMosaic-like'
+					else:
+						st_list['NG-STAR'] += '\tNonMosaic-like'
+				elif '|' in penA:
+					penA = penA.split('|')[0]
 					if penAmosaicsdic[penA] == 'Mosaic':
 						st_list['NG-STAR'] += '\tMosaic-like'
 					else:
